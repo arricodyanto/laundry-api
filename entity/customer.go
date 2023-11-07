@@ -1,9 +1,9 @@
 package entity
 
 type Customer struct {
-	Id         int
-	Name       string
-	Contact    string
-	Address    string
-	IsEmployee bool
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phoneNumber"`
+	Address     string `json:"address"`
+	IsEmployee  bool   `json:"isEmployee"`
 }

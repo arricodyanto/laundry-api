@@ -1,4 +1,4 @@
-INSERT INTO mst_customer (id, name, contact, address, is_employee) VALUES
+INSERT INTO mst_customer (id, name, phone_number, address, is_employee) VALUES
 (1, 'Mirna', '085664876443', 'Jakarta', true),
 (2, 'Jessica', '0812654987', 'Bandung', false);
 

@@ -47,7 +47,7 @@ func GetAllProducts(c *gin.Context) {
 	if len(matchedProducts) > 0 {
 		c.JSON(http.StatusOK, gin.H{"message": "Successfully Get Books Data", "data": matchedProducts})
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product Not Found!"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Products Not Found!"})
 	}
 }
 
@@ -83,7 +83,7 @@ func CreateNewProduct(c *gin.Context) {
 	queryMaxId := "SELECT MAX(id) FROM mst_product;"
 	err = db.QueryRow(queryMaxId).Scan(&maxId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed Getting New ID for New Product"})
 		return
 	}
 

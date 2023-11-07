@@ -10,6 +10,13 @@ func main() {
 	// Tulis kode kamu disini
 	router := gin.Default()
 
+	// Customers
+	router.GET("/customers/", transactions.GetAllCustomers)
+	router.GET("/customers/:id", transactions.GetCustomerById)
+	router.POST("/customers", transactions.CreateNewCustomer)
+	router.PUT("/customers/:id", transactions.UpdateCustomerById)
+	router.DELETE("/customers/:id", transactions.DeleteCustomerById)
+
 	// Products
 	router.GET("/products", transactions.GetAllProducts)
 	router.GET("/products/:id", transactions.GetProductById)
