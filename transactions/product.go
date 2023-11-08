@@ -3,6 +3,7 @@ package transactions
 import (
 	"challenge-goapi/config"
 	"challenge-goapi/entity"
+	"challenge-goapi/utils"
 	"database/sql"
 	"net/http"
 	"strconv"
@@ -14,7 +15,7 @@ func GetAllProducts(c *gin.Context) {
 	db := config.ConnectDB()
 	defer db.Close()
 
-	productName := c.Query("name")
+	productName := c.Query("productName")
 
 	query := "SELECT id, name, price, unit FROM mst_product"
 
@@ -58,7 +59,7 @@ func GetProductById(c *gin.Context) {
 
 	id := c.Param("id")
 
-	productId, err := strconv.Atoi(id)
+	_, err := strconv.Atoi(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Product ID"})
 		return
@@ -67,9 +68,9 @@ func GetProductById(c *gin.Context) {
 	query := "SELECT id, name, price, unit FROM mst_product WHERE id = $1;"
 
 	var matchedProduct entity.Product
-	err = db.QueryRow(query, productId).Scan(&matchedProduct.Id, &matchedProduct.Name, &matchedProduct.Price, &matchedProduct.Unit)
+	err = db.QueryRow(query, id).Scan(&matchedProduct.Id, &matchedProduct.Name, &matchedProduct.Price, &matchedProduct.Unit)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product ID Not Found"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Product Founded!", "data": matchedProduct})
@@ -101,7 +102,7 @@ func CreateNewProduct(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	newProduct.Id = productId
+	newProduct.Id = utils.FormatIntToString(productId)
 	c.JSON(http.StatusCreated, gin.H{"message": "Successfully Created New Product", "data": newProduct})
 }
 
@@ -111,7 +112,7 @@ func UpdateProductById(c *gin.Context) {
 
 	id := c.Param("id")
 
-	productId, err := strconv.Atoi(id)
+	_, err := strconv.Atoi(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Product ID"})
 		return
@@ -124,14 +125,18 @@ func UpdateProductById(c *gin.Context) {
 		return
 	}
 
-	query := "UPDATE mst_product SET name = $2, price = $3, unit = $4 WHERE id = $1;"
+	query := "UPDATE mst_product SET name = $2, price = $3, unit = $4 WHERE id = $1 RETURNING *;"
 
-	_, err = db.Exec(query, productId, updatedProduct.Name, updatedProduct.Price, updatedProduct.Unit)
+	row, err := db.Exec(query, id, updatedProduct.Name, updatedProduct.Price, updatedProduct.Unit)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product Not Found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	updatedProduct.Id = productId
+	if rowAffected, _ := row.RowsAffected(); rowAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product ID Not Found!"})
+		return
+	}
+	updatedProduct.Id = id
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully Updated Product ID '" + id + "'", "data": updatedProduct})
 }
 
@@ -140,7 +145,7 @@ func DeleteProductById(c *gin.Context) {
 	defer db.Close()
 
 	id := c.Param("id")
-	productId, err := strconv.Atoi(id)
+	_, err := strconv.Atoi(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Product ID"})
 		return
@@ -148,9 +153,13 @@ func DeleteProductById(c *gin.Context) {
 
 	query := "DELETE FROM mst_product WHERE id = $1 RETURNING *;"
 
-	row, _ := db.Exec(query, productId)
+	row, err := db.Exec(query, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if rowAffected, _ := row.RowsAffected(); rowAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product Not Found!"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product ID Not Found!"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully Deleted Product", "data": "OK"})
