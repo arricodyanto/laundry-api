@@ -11,38 +11,18 @@ func main() {
 	router := gin.Default()
 
 	// Customers
-	router.GET("/customers/", func(c *gin.Context) {
-		transactions.GetAllCustomers(c, false)
-	})
-	router.GET("/customers/:id", func(c *gin.Context) {
-		transactions.GetCustomerById(c, false)
-	})
-	router.POST("/customers", func(c *gin.Context) {
-		transactions.CreateNewCustomer(c, false)
-	})
-	router.PUT("/customers/:id", func(c *gin.Context) {
-		transactions.UpdateCustomerById(c, false)
-	})
-	router.DELETE("/customers/:id", func(c *gin.Context) {
-		transactions.DeleteCustomerById(c, false)
-	})
+	router.GET("/customers/", transactions.GetAllCustomers)
+	router.GET("/customers/:id", transactions.GetCustomerById)
+	router.POST("/customers", transactions.CreateNewCustomer)
+	router.PUT("/customers/:id", transactions.UpdateCustomerById)
+	router.DELETE("/customers/:id", transactions.DeleteCustomerById)
 
-	// Employees
-	router.GET("/employees/", func(c *gin.Context) {
-		transactions.GetAllCustomers(c, true)
-	})
-	router.GET("/employees/:id", func(c *gin.Context) {
-		transactions.GetCustomerById(c, true)
-	})
-	router.POST("/employees", func(c *gin.Context) {
-		transactions.CreateNewCustomer(c, true)
-	})
-	router.PUT("/employees/:id", func(c *gin.Context) {
-		transactions.UpdateCustomerById(c, true)
-	})
-	router.DELETE("/employees/:id", func(c *gin.Context) {
-		transactions.DeleteCustomerById(c, true)
-	})
+	// // Employees
+	router.GET("/employees/", transactions.GetAllEmployees)
+	router.GET("/employees/:id", transactions.GetEmployeeById)
+	router.POST("/employees", transactions.CreateNewEmployee)
+	router.PUT("/employees/:id", transactions.UpdateEmployeeById)
+	router.DELETE("/employees/:id", transactions.DeleteEmployeeById)
 
 	// Products
 	router.GET("/products", transactions.GetAllProducts)
