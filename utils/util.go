@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,14 +13,26 @@ import (
 func Validate(err error, message string, c *gin.Context, tx *sql.Tx) {
 	if err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": message})
-		return
+		log.Println(err, "Transaction has been rolled back.")
+	} else {
+		log.Println("Successfully " + message)
 	}
+}
+
+func ErrorRecover(c *gin.Context) error {
+	err := recover()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
+	return nil
 }
 
 func FormatStringToTime(dateString string) time.Time {
 	format := "2006-01-02"
-	result, _ := time.Parse(format, dateString)
+	result, err := time.Parse(format, dateString)
+	if err != nil {
+		panic(err.Error())
+	}
 	return result
 }
 
