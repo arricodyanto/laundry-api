@@ -10,9 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var db = config.ConnectDB()
-
 func GetAllProducts(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	productName := c.Query("name")
 
 	query := "SELECT id, name, price, unit FROM mst_product"
@@ -52,6 +53,9 @@ func GetAllProducts(c *gin.Context) {
 }
 
 func GetProductById(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 
 	productId, err := strconv.Atoi(id)
@@ -72,6 +76,9 @@ func GetProductById(c *gin.Context) {
 }
 
 func CreateNewProduct(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var newProduct entity.Product
 	err := c.ShouldBind(&newProduct)
 	if err != nil {
@@ -99,6 +106,9 @@ func CreateNewProduct(c *gin.Context) {
 }
 
 func UpdateProductById(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 
 	productId, err := strconv.Atoi(id)
@@ -126,6 +136,9 @@ func UpdateProductById(c *gin.Context) {
 }
 
 func DeleteProductById(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 	productId, err := strconv.Atoi(id)
 	if err != nil {

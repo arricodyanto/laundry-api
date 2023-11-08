@@ -51,5 +51,8 @@ func main() {
 	router.PUT("/products/:id", transactions.UpdateProductById)
 	router.DELETE("/products/:id", transactions.DeleteProductById)
 
+	// Transactions
+	router.POST("/transactions", transactions.CreateNewTransaction)
+
 	router.Run(":8080")
 }

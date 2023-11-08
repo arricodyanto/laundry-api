@@ -5,10 +5,10 @@ import (
 )
 
 type Bill struct {
-	Id          int
-	Customer_Id int
-	Employee_Id int
-	BillDate    time.Time
-	EntryDate   time.Time
-	FinishDate  time.Time
+	Id          int       `json:"id"`
+	BillDate    time.Time `json:"billDate"`
+	EntryDate   time.Time `json:"entryDate"`
+	FinishDate  time.Time `json:"finishDate"`
+	Employee_Id int       `json:"employeeId"`
+	Customer_Id int       `json:"customerId"`
 }

@@ -1,6 +1,7 @@
 package transactions
 
 import (
+	"challenge-goapi/config"
 	"net/http"
 	"strconv"
 
@@ -17,6 +18,9 @@ type resultCustomer struct {
 var message string
 
 func GetAllCustomers(c *gin.Context, isEmployee bool) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	query := "SELECT id, name, phone_number, address FROM mst_customer WHERE is_employee = $1;"
 
 	rows, err := db.Query(query, isEmployee)
@@ -50,6 +54,9 @@ func GetAllCustomers(c *gin.Context, isEmployee bool) {
 }
 
 func GetCustomerById(c *gin.Context, isEmployee bool) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 
 	if !isEmployee {
@@ -79,6 +86,9 @@ func GetCustomerById(c *gin.Context, isEmployee bool) {
 }
 
 func CreateNewCustomer(c *gin.Context, isEmployee bool) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	var newCustomer resultCustomer
 	err := c.ShouldBind(&newCustomer)
 	if err != nil {
@@ -115,6 +125,9 @@ func CreateNewCustomer(c *gin.Context, isEmployee bool) {
 }
 
 func UpdateCustomerById(c *gin.Context, isEmployee bool) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 
 	if !isEmployee {
@@ -166,6 +179,9 @@ func UpdateCustomerById(c *gin.Context, isEmployee bool) {
 }
 
 func DeleteCustomerById(c *gin.Context, isEmployee bool) {
+	db := config.ConnectDB()
+	defer db.Close()
+
 	id := c.Param("id")
 
 	if !isEmployee {
