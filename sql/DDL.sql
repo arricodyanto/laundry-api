@@ -2,8 +2,14 @@ CREATE TABLE mst_customer (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     phone_number VARCHAR(15) NOT NULL,
-    address VARCHAR(255),
-    is_employee BOOLEAN DEFAULT false
+    address VARCHAR(255)
+);
+
+CREATE TABLE mst_employee (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(15) NOT NULL,
+    address VARCHAR(255)
 );
 
 CREATE TABLE mst_product (
@@ -16,12 +22,12 @@ CREATE TABLE mst_product (
 CREATE TABLE trx_bill (
     id SERIAL PRIMARY KEY,
     customer_id INT NOT NULL,
-    employee_id INT NOT NULL,
+    employee_id INT,
     bill_date DATE NOT NULL,
     entry_date DATE NOT NULL,
     finish_date DATE NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES mst_customer (id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES mst_customer (id)
+    FOREIGN KEY (employee_id) REFERENCES mst_employee (id) ON DELETE SET NULL
 );
 
 CREATE TABLE trx_bill_detail (
