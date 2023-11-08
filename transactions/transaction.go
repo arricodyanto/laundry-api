@@ -74,8 +74,10 @@ func CreateNewTransaction(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error Commited": err.Error()})
 		return
 	}
+
+	// Update newTransaction value with returning new id's
 	newTransaction.Id = billId
-	for i, _ := range newTransaction.BillDetails {
+	for i := range newTransaction.BillDetails {
 		newTransaction.BillDetails[i].Id = utils.FormatIntToString(billDetailsId[i])
 		newTransaction.BillDetails[i].Bill_Id = utils.FormatIntToString(billId)
 	}
