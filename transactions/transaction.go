@@ -73,7 +73,7 @@ func createBill(bill entity.Bill, c *gin.Context, tx *sql.Tx) int {
 	queryMaxId := "SELECT MAX(id) FROM trx_bill;"
 
 	err := tx.QueryRow(queryMaxId).Scan(&maxBillId)
-	utils.Validate(err, "Inserted New Bill Details", c, tx)
+	utils.Validate(err, "Getting New ID for New Transaction", c, tx)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -83,7 +83,7 @@ func createBill(bill entity.Bill, c *gin.Context, tx *sql.Tx) int {
 	queryInsert := "INSERT INTO trx_bill (id, bill_date, entry_date, finish_date, employee_id, customer_id) VALUES ($1, $2, $3, $4, $5, $6);"
 
 	_, err = tx.Exec(queryInsert, newBillId, bill.BillDate, bill.EntryDate, bill.FinishDate, bill.Employee_Id, bill.Customer_Id)
-	utils.Validate(err, "Inserted New Bill Details", c, tx)
+	utils.Validate(err, fmt.Sprintf("Inserted New Bill ID '%d'", newBillId), c, tx)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -97,7 +97,7 @@ func createBillDetail(billDetails []entity.BillDetail, billId int, c *gin.Contex
 		queryMaxId := "SELECT MAX(id) FROM trx_bill_detail;"
 
 		err := tx.QueryRow(queryMaxId).Scan(&maxBillDetailId)
-		utils.Validate(err, "Inserted New Bill Details", c, tx)
+		utils.Validate(err, "Getting New ID for New Bill Detail", c, tx)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -106,7 +106,7 @@ func createBillDetail(billDetails []entity.BillDetail, billId int, c *gin.Contex
 		queryInsert := "INSERT INTO trx_bill_detail (id, bill_id, product_id, product_price, qty) VALUES ($1, $2, $3, $4, $5);"
 
 		_, err = tx.Exec(queryInsert, newBillDetailid, billId, billDetail.Product_Id, billDetail.ProductPrice, billDetail.Quantity)
-		utils.Validate(err, "Inserted New Bill Details", c, tx)
+		utils.Validate(err, fmt.Sprintf("Inserted New Bill Details ID '%d'", newBillDetailid), c, tx)
 		if err != nil {
 			panic(err.Error())
 		}
