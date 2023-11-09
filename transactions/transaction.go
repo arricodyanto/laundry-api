@@ -179,7 +179,7 @@ func GetTransactionById(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	bill := getBillById(billId, c, tx)
+	transaction := getBillById(billId, c, tx)
 	billDetails := getBillDetailsById(billId, c, tx)
 	totalBill := getTotalBill(billId, c, tx)
 
@@ -189,18 +189,13 @@ func GetTransactionById(c *gin.Context) {
 		return
 	}
 
-	transaction := listTransaction{
-		Id:          bill.Id,
-		BillDate:    utils.FormatTimeStringToString(bill.BillDate),
-		EntryDate:   utils.FormatTimeStringToString(bill.EntryDate),
-		FinishDate:  utils.FormatTimeStringToString(bill.FinishDate),
-		Employee:    bill.Employee,
-		Customer:    bill.Customer,
-		BillDetails: billDetails,
-		TotalBill:   totalBill,
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully Get Transaction", "data": transaction})
+	transaction.BillDate = utils.FormatTimeStringToString(transaction.BillDate)
+	transaction.EntryDate = utils.FormatTimeStringToString(transaction.EntryDate)
+	transaction.FinishDate = utils.FormatTimeStringToString(transaction.FinishDate)
+	transaction.BillDetails = billDetails
+	transaction.TotalBill = totalBill
 
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully Get Transaction", "data": transaction})
 }
 
 func getBillById(billId int, c *gin.Context, tx *sql.Tx) listTransaction {
@@ -219,9 +214,9 @@ func getBillDetailsById(billId int, c *gin.Context, tx *sql.Tx) []billDetails {
 	query := "SELECT tbd.id, tbd.bill_id, tp.id, tp.name, tp.price, tp.unit, tbd.product_price, tbd.qty FROM trx_bill_detail tbd JOIN mst_product tp ON tbd.product_id = tp.id WHERE tbd.bill_id = $1;"
 
 	rows, err := tx.Query(query, billId)
-	utils.Validate(err, fmt.Sprintf("Getting Bill Details for Bill ID '%d", billId), c, tx)
+	utils.Validate(err, fmt.Sprintf("Getting Bill Details for Bill ID '%d'", billId), c, tx)
 	if err != nil {
-		panic(fmt.Sprintf("Bill Details for Bill ID '%d' Not Found", billId))
+		panic(err.Error())
 	}
 	defer rows.Close()
 
@@ -243,10 +238,79 @@ func getTotalBill(billId int, c *gin.Context, tx *sql.Tx) int {
 
 	var totalBill int
 	err := tx.QueryRow(query, billId).Scan(&totalBill)
-	utils.Validate(err, fmt.Sprintf("Getting Product Price for Bill ID '%d", billId), c, tx)
+	utils.Validate(err, fmt.Sprintf("Getting Total Price for Bill ID '%d'", billId), c, tx)
 	if err != nil {
-		panic(fmt.Sprintf("Product Price for Bill ID '%d' Not Found", billId))
+		panic(fmt.Sprintf("Total Price for Bill ID '%d' Not Found", billId))
 	}
 
 	return totalBill
+}
+
+func GetAllTransactions(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+	defer utils.ErrorRecover(c)
+
+	startDate := c.Query("startDate")
+	endDate := c.Query("endDate")
+
+	query := "SELECT tb.id FROM trx_bill tb JOIN mst_employee me ON tb.employee_id = me.id JOIN mst_customer mc ON tb.customer_id = mc.id WHERE 1 = 1"
+
+	tx, err := db.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+
+	var rows *sql.Rows
+	if startDate != "" && endDate != "" {
+		query += " AND tb.bill_date >= $1 AND tb.bill_date <= $2"
+		rows, err = tx.Query(query, startDate, endDate)
+	} else if startDate != "" && endDate == "" {
+		query += " AND tb.bill_date >= $1"
+		rows, err = tx.Query(query, startDate)
+	} else if startDate == "" && endDate != "" {
+		query += " AND tb.bill_date <= $1"
+		rows, err = tx.Query(query, endDate)
+	} else {
+		rows, err = tx.Query(query)
+	}
+
+	utils.Validate(err, "Getting All Transactions", c, tx)
+	if err != nil {
+		panic("Failed to Get All Transactions")
+	}
+	defer rows.Close()
+
+	var billIds []int
+	for rows.Next() {
+		var billId int
+		err := rows.Scan(&billId)
+		if err != nil {
+			panic("Failed to Scan All Transactions")
+		}
+		billIds = append(billIds, billId)
+	}
+
+	var transactions []listTransaction
+	for _, billId := range billIds {
+		bill := getBillById(billId, c, tx)
+		billDetails := getBillDetailsById(billId, c, tx)
+		totalBill := getTotalBill(billId, c, tx)
+
+		bill.BillDate = utils.FormatTimeStringToString(bill.BillDate)
+		bill.EntryDate = utils.FormatTimeStringToString(bill.EntryDate)
+		bill.FinishDate = utils.FormatTimeStringToString(bill.FinishDate)
+		bill.BillDetails = billDetails
+		bill.TotalBill = totalBill
+
+		transactions = append(transactions, bill)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully Get All Transaction", "data": transactions})
 }
