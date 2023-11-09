@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,24 @@ type transaction struct {
 	Employee_Id string              `json:"employeeId"`
 	Customer_Id string              `json:"customerId"`
 	BillDetails []entity.BillDetail `json:"billDetails"`
+}
+
+type billDetails struct {
+	Id           string         `json:"id"`
+	Bill_Id      string         `json:"billId"`
+	Product      entity.Product `json:"product"`
+	ProductPrice int            `json:"productPrice"`
+	Quantity     int            `json:"qty"`
+}
+type listTransaction struct {
+	Id          string          `json:"id"`
+	BillDate    string          `json:"billDate"`
+	EntryDate   string          `json:"entryDate"`
+	FinishDate  string          `json:"finishDate"`
+	Employee    entity.Employee `json:"employee"`
+	Customer    entity.Customer `json:"customer"`
+	BillDetails []billDetails   `json:"billDetails"`
+	TotalBill   int             `json:"totalBill"`
 }
 
 func CreateNewTransaction(c *gin.Context) {
@@ -46,6 +65,7 @@ func CreateNewTransaction(c *gin.Context) {
 	tx, err := db.Begin()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
 	}
 
 	billId := createBill(formattedBill, c, tx)
@@ -141,17 +161,92 @@ func updateProductPrice(billDetailsId []int, c *gin.Context, tx *sql.Tx) []int {
 	return productPrices
 }
 
-// func GetTransactionById(c *gin.Context) {
-// 	db := config.ConnectDB()
-// 	defer db.Close()
+func GetTransactionById(c *gin.Context) {
+	db := config.ConnectDB()
+	defer db.Close()
+	defer utils.ErrorRecover(c)
 
-// 	id := c.Param("id")
+	id := c.Param("id_bill")
 
-// 	billId, err := strconv.Atoi(id)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Transaction ID"})
-// 		return
-// 	}
+	billId, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Transaction ID"})
+		return
+	}
 
-// 	query := "SELECT tb.id, tb.bill_date, tb.entry_date, tb.finish_date, me."
-// }
+	tx, err := db.Begin()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+	bill := getBillById(billId, c, tx)
+	billDetails := getBillDetailsById(billId, c, tx)
+	totalBill := getTotalBill(billId, c, tx)
+
+	err = tx.Commit()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	transaction := listTransaction{
+		Id:          bill.Id,
+		BillDate:    bill.BillDate,
+		EntryDate:   bill.EntryDate,
+		FinishDate:  bill.FinishDate,
+		Employee:    bill.Employee,
+		Customer:    bill.Customer,
+		BillDetails: billDetails,
+		TotalBill:   totalBill,
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully Get Transaction", "data": transaction})
+
+}
+
+func getBillById(billId int, c *gin.Context, tx *sql.Tx) listTransaction {
+	query := "SELECT tb.id, tb.bill_date, tb.entry_date, tb.finish_date, me.id, me.name, me.phone_number, me.address, mc.id, mc.name, mc.phone_number, mc.address FROM trx_bill tb JOIN mst_employee me ON tb.employee_id = me.id JOIN mst_customer mc ON tb.customer_id = mc.id WHERE tb.id = $1;"
+
+	var matchedBill listTransaction
+	err := tx.QueryRow(query, billId).Scan(&matchedBill.Id, &matchedBill.BillDate, &matchedBill.EntryDate, &matchedBill.FinishDate, &matchedBill.Employee.Id, &matchedBill.Employee.Name, &matchedBill.Employee.PhoneNumber, &matchedBill.Employee.Address, &matchedBill.Customer.Id, &matchedBill.Customer.Name, &matchedBill.Customer.PhoneNumber, &matchedBill.Employee.Address)
+	utils.Validate(err, fmt.Sprintf("Getting Bill for ID '%d'", billId), c, tx)
+	if err != nil {
+		panic("Bill ID Not Found!")
+	}
+	return matchedBill
+}
+
+func getBillDetailsById(billId int, c *gin.Context, tx *sql.Tx) []billDetails {
+	query := "SELECT tbd.id, tbd.bill_id, tp.id, tp.name, tp.price, tp.unit, tbd.product_price, tbd.qty FROM trx_bill_detail tbd JOIN mst_product tp ON tbd.product_id = tp.id WHERE tbd.bill_id = $1;"
+
+	rows, err := tx.Query(query, billId)
+	utils.Validate(err, fmt.Sprintf("Getting Bill Details for Bill ID '%d", billId), c, tx)
+	if err != nil {
+		panic(fmt.Sprintf("Bill Details for Bill ID '%d' Not Found", billId))
+	}
+	defer rows.Close()
+
+	var matchedBillDetails []billDetails
+	for rows.Next() {
+		var matchedBillDetail billDetails
+		err := rows.Scan(&matchedBillDetail.Id, &matchedBillDetail.Bill_Id, &matchedBillDetail.Product.Id, &matchedBillDetail.Product.Name, &matchedBillDetail.Product.Price, &matchedBillDetail.Product.Unit, &matchedBillDetail.ProductPrice, &matchedBillDetail.Quantity)
+		if err != nil {
+			panic("Failed to Get Bill Details")
+		}
+		matchedBillDetails = append(matchedBillDetails, matchedBillDetail)
+	}
+
+	return matchedBillDetails
+}
+
+func getTotalBill(billId int, c *gin.Context, tx *sql.Tx) int {
+	query := "SELECT SUM(product_price) productPrice FROM trx_bill_detail WHERE bill_id = $1;"
+
+	var totalBill int
+	err := tx.QueryRow(query, billId).Scan(&totalBill)
+	utils.Validate(err, fmt.Sprintf("Getting Product Price for Bill ID '%d", billId), c, tx)
+	if err != nil {
+		panic(fmt.Sprintf("Product Price for Bill ID '%d' Not Found", billId))
+	}
+
+	return totalBill
+}

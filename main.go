@@ -32,6 +32,7 @@ func main() {
 	router.DELETE("/products/:id", transactions.DeleteProductById)
 
 	// Transactions
+	router.GET("/transactions/:id_bill", transactions.GetTransactionById)
 	router.POST("/transactions", transactions.CreateNewTransaction)
 
 	router.Run(":8080")
