@@ -253,6 +253,7 @@ func GetAllTransactions(c *gin.Context) {
 
 	startDate := c.Query("startDate")
 	endDate := c.Query("endDate")
+	productName := c.Query("productName")
 
 	query := "SELECT tb.id FROM trx_bill tb JOIN mst_employee me ON tb.employee_id = me.id JOIN mst_customer mc ON tb.customer_id = mc.id WHERE 1 = 1"
 
@@ -263,17 +264,33 @@ func GetAllTransactions(c *gin.Context) {
 	}
 
 	var rows *sql.Rows
-	if startDate != "" && endDate != "" {
-		query += " AND tb.bill_date >= $1 AND tb.bill_date <= $2"
-		rows, err = tx.Query(query, startDate, endDate)
-	} else if startDate != "" && endDate == "" {
-		query += " AND tb.bill_date >= $1"
-		rows, err = tx.Query(query, startDate)
-	} else if startDate == "" && endDate != "" {
-		query += " AND tb.bill_date <= $1"
-		rows, err = tx.Query(query, endDate)
-	} else {
-		rows, err = tx.Query(query)
+	if productName != "" {
+		if startDate != "" && endDate != "" {
+			query += "AND tb.bill_date >= $1 AND tb.bill_date <= $2 AND tb.id IN ( SELECT tbd.bill_id FROM trx_bill_detail tbd JOIN mst_product mp ON tbd.product_id = mp.id WHERE mp.name ILIKE '%' || $3 || '%' );"
+			rows, err = tx.Query(query, startDate, endDate, productName)
+		} else if startDate != "" && endDate == "" {
+			query += " AND tb.bill_date >= $1 AND tb.id IN ( SELECT tbd.bill_id FROM trx_bill_detail tbd JOIN mst_product mp ON tbd.product_id = mp.id WHERE mp.name ILIKE '%' || $2 || '%' );"
+			rows, err = tx.Query(query, startDate, productName)
+		} else if startDate == "" && endDate != "" {
+			query += " AND tb.bill_date <= $1 AND tb.id IN ( SELECT tbd.bill_id FROM trx_bill_detail tbd JOIN mst_product mp ON tbd.product_id = mp.id WHERE mp.name ILIKE '%' || $2 || '%' );"
+			rows, err = tx.Query(query, endDate, productName)
+		} else {
+			query += " AND tb.id IN ( SELECT tbd.bill_id FROM trx_bill_detail tbd JOIN mst_product mp ON tbd.product_id = mp.id WHERE mp.name ILIKE '%' || $1 || '%' );"
+			rows, err = tx.Query(query, productName)
+		}
+	} else if productName == "" {
+		if startDate != "" && endDate != "" {
+			query += " AND tb.bill_date >= $1 AND tb.bill_date <= $2;"
+			rows, err = tx.Query(query, startDate, endDate)
+		} else if startDate != "" && endDate == "" {
+			query += " AND tb.bill_date >= $1"
+			rows, err = tx.Query(query, startDate)
+		} else if startDate == "" && endDate != "" {
+			query += " AND tb.bill_date <= $1"
+			rows, err = tx.Query(query, endDate)
+		} else {
+			rows, err = tx.Query(query)
+		}
 	}
 
 	utils.Validate(err, "Getting All Transactions", c, tx)
