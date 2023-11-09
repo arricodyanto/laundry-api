@@ -9,7 +9,6 @@ pengetesan terhadap endpoint yang tersedia Anda bisa menggunakan Dokumentasi
 Postman pada link berikut.
 
 ```
-
 https://documenter.getpostman.com/view/17920856/2s9YXia2pu
 
 ```
