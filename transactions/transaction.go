@@ -191,9 +191,9 @@ func GetTransactionById(c *gin.Context) {
 
 	transaction := listTransaction{
 		Id:          bill.Id,
-		BillDate:    bill.BillDate,
-		EntryDate:   bill.EntryDate,
-		FinishDate:  bill.FinishDate,
+		BillDate:    utils.FormatTimeStringToString(bill.BillDate),
+		EntryDate:   utils.FormatTimeStringToString(bill.EntryDate),
+		FinishDate:  utils.FormatTimeStringToString(bill.FinishDate),
 		Employee:    bill.Employee,
 		Customer:    bill.Customer,
 		BillDetails: billDetails,

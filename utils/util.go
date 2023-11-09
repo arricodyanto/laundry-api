@@ -36,6 +36,12 @@ func FormatStringToTime(dateString string) time.Time {
 	return result
 }
 
+func FormatTimeStringToString(dateString string) string {
+	time, _ := time.Parse(time.RFC3339, dateString)
+	result := time.Format("2006-01-02")
+	return result
+}
+
 func FormatStringToInt(char string) int {
 	result, _ := strconv.Atoi(char)
 	return result
