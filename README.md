@@ -1,20 +1,90 @@
 # Aplikasi Enigma Laundry
 
+## Postman Documentation
+
+Hai,
+
+Projek ini telah berhasil melengkapi tantangan yang diberikan. Untuk mempermudah
+pengetesan terhadap endpoint yang tersedia Anda bisa menggunakan Dokumentasi
+Postman pada link berikut.
+
+```
+
+https://documenter.getpostman.com/view/17920856/2s9YXia2pu
+
+```
+
+Tetapi sebelum untuk mulai menggunakan dokumentasi pada tautan di atas, mohon
+perhatikan langkah-langkah berikut. Terimakasih :))
+
+## Clonning repository
+
+Untuk menjalankan aplikasi ini, silakan clone repository ini ke local storage
+device Anda dengan menggunakan perintah berikut.
+
+```
+git clone https://git.enigmacamp.com/enigma-20/arrico-handyanto/challenge-goapi.git
+```
+
+## Setup Database
+
+Sebelum melakukan run pada project di repository ini, lakukan konfigurasi
+database yang akan Anda gunakan di local. Perhatikan baris kode berikut yang ada
+pada directory /config/config.go
+
+```
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "postgres"
+	dbname   = "enigma_laundry_api"
+)
+```
+
+Ubah value pada variable di atas sesuai dengan database yang Anda miliki. Jika
+belum memiliki database, silakan buat database baru dengan nama
+"enigma_laundry_api"
+
+## Run SQL
+
+Untuk melakukan inisialisasi schema pada database, Anda dapat menjalankan sql
+dengan Querying Tool dengan menggunakan script pada directory berikut
+
+```
+- /sql/DDL.sql
+- /sql/DML.sql
+```
+
+## Run The App
+
+Project Anda sudah siap digunakan. Jalankan perintah berikut untuk memulai.
+
+```
+go run .
+```
+
+## Enigma Challenge
+
 ### Deskripsi
 
-Setelah menyelesaikan pembelajaran tentang Go API, Anda ditugaskan oleh manajemen Enigma Laundry (EL) untuk membuat sebuah aplikasi sederhana berbasis API untuk mencatat transaksi di tokonya.
+Setelah menyelesaikan pembelajaran tentang Go API, Anda ditugaskan oleh
+manajemen Enigma Laundry (EL) untuk membuat sebuah aplikasi sederhana berbasis
+API untuk mencatat transaksi di tokonya.
 
 ![logo](./asset/Enigma-Laundry.png)
 
 Fitur-fitur yang diminta oleh manajemen EL adalah:
 
-1.  Struktur/Design Database yang memenuhi kaidah normalisasi berdasarkan nota dibawah ini dengan kriteria sbb :
+1.  Struktur/Design Database yang memenuhi kaidah normalisasi berdasarkan nota
+    dibawah ini dengan kriteria sbb :
 
         - Hasil design dalam bentuk file Script DDL Postgre SQL
         - Design database minimal memiliki 2 tabel master dan 1 tabel transaksi
         - Sediakan sample data dalam bentuk Script DML Postgre SQL
 
-2.  Aplikasi berbasis API menggunakan bahasa pemrograman Golang dengan kriteria sbb :
+2.  Aplikasi berbasis API menggunakan bahasa pemrograman Golang dengan kriteria
+    sbb :
 
         - Aplikasi memiliki fitur untuk melakukan GET, POST, PUT, dan DELETE pada tabel master
           1. Manajemen Customer
@@ -25,9 +95,10 @@ Fitur-fitur yang diminta oleh manajemen EL adalah:
         - Setiap fitur master wajib memiliki minimal 2 jenis validasi yang berbeda
         - Setiap transaksi master wajib memiliki minimal 4 jenis validasi yang berbeda
 
-3.  Dokumentasi cara menjalankan aplikasi dan penggunaan aplikasi dalam bentuk readme.md atau dokumen ektensi word atau pdf
+3.  Dokumentasi cara menjalankan aplikasi dan penggunaan aplikasi dalam bentuk
+    readme.md atau dokumen ektensi word atau pdf
 
-- - -
+---
 
 ## API Spec
 
@@ -46,9 +117,9 @@ Request :
 
 ```json
 {
-  "name": "string",
-  "phoneNumber": "string",
-  "address": "string"
+	"name": "string",
+	"phoneNumber": "string",
+	"address": "string"
 }
 ```
 
@@ -59,13 +130,13 @@ Response :
 
 ```json
 {
-  "message": "string",
-  "data": {
-    "id": "string",
-    "name": "string",
-    "phoneNumber": "string",
-    "address": "string"
-  }
+	"message": "string",
+	"data": {
+		"id": "string",
+		"name": "string",
+		"phoneNumber": "string",
+		"address": "string"
+	}
 }
 ```
 
@@ -85,13 +156,13 @@ Response :
 
 ```json
 {
-  "message": "string",
-  "data": {
-    "id": "string",
-    "name": "string",
-    "phoneNumber": "string",
-    "address": "string"
-  }
+	"message": "string",
+	"data": {
+		"id": "string",
+		"name": "string",
+		"phoneNumber": "string",
+		"address": "string"
+	}
 }
 ```
 
@@ -108,9 +179,9 @@ Request :
 
 ```json
 {
-  "name": "string",
-  "phoneNumber": "string",
-  "address": "string"
+	"name": "string",
+	"phoneNumber": "string",
+	"address": "string"
 }
 ```
 
@@ -121,13 +192,13 @@ Response :
 
 ```json
 {
-  "message": "string",
-  "data": {
-    "id": "string",
-    "name": "string",
-    "phoneNumber": "string",
-    "address": "string"
-  }
+	"message": "string",
+	"data": {
+		"id": "string",
+		"name": "string",
+		"phoneNumber": "string",
+		"address": "string"
+	}
 }
 ```
 
@@ -148,8 +219,8 @@ Response :
 
 ```json
 {
-  "message": "string",
-  "data": "OK"
+	"message": "string",
+	"data": "OK"
 }
 ```
 
@@ -306,8 +377,8 @@ Response :
 
 ```json
 {
-  "message": "string",
-  "data": "OK"
+	"message": "string",
+	"data": "OK"
 }
 ```
 
@@ -483,3 +554,8 @@ Response :
   ]
 }
 ```
+
+## Credits
+
+[Arrico Handyanto (Vercel)](https://arricohandyanto.vercel.app) -
+[Arrico Handyanto (LinkedIn)](https://www.linkedin.com/in/arricohandyanto/)
